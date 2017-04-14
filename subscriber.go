@@ -16,6 +16,13 @@ type Subscriber struct {
 	Topics          []string `yaml:"Topics"`
 	GetTopics       string
 	EnvironmentFile string
+
+	SubscriberHooks `yaml:"Hooks"`
+}
+
+type SubscriberHooks struct {
+	OnSubscribe string `yaml:"OnSubscribe"`
+	OnPublish   string `yaml:"OnPublish"`
 }
 
 func NewSubscriber() (*Subscriber, error) {
