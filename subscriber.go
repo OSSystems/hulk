@@ -5,14 +5,17 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/joho/godotenv"
+
 	"io/ioutil"
 
 	yaml "gopkg.in/yaml.v2"
 )
 
 type Subscriber struct {
-	Topics    []string `yaml:"Topics"`
-	GetTopics string
+	Topics          []string `yaml:"Topics"`
+	GetTopics       string
+	EnvironmentFile string
 }
 
 func NewSubscriber() (*Subscriber, error) {
@@ -22,6 +25,15 @@ func NewSubscriber() (*Subscriber, error) {
 
 func (s *Subscriber) Receiver(topic string) {
 	fmt.Println(topic)
+}
+
+func (s *Subscriber) LoadEnvironment() (map[string]string, error) {
+	env, err := godotenv.Read(s.EnvironmentFile)
+	if err != nil {
+		return nil, err
+	}
+
+	return env, nil
 }
 
 func LoadSubscribers(path string) ([]*Subscriber, error) {
