@@ -1,0 +1,20 @@
+# Default topics to subscribe
+Topics:
+ - /all/reboot
+
+# Extra topics retrieved from device management server
+GetTopics: curl -H "Authorization: ${AUTHORIZATION}" http://example.com/api/device/topics
+
+# Environment file to use for each command of Hooks section and GetTopics
+EnvironmentFile: /var/run/mydaemon/env
+
+# The Incredible Hooks!
+Hooks:
+  # Notify device management server that the device is accepting "reboot"
+  OnSubscribed: curl -X POST http://example.com/api/device/${DEVICE}/${TOPIC}
+  # Command to execute when ANY topic receives a message
+  OnPublished: reboot
+
+# In this example the EnvironmentFile must contains AUTHORIZATION variable
+# with the authorization token retrieved from the device management server.
+# Note that you, or something else, are responsible for writting the contents of EnvironmentFile.
