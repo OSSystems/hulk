@@ -12,6 +12,7 @@ import (
 
 type Subscriber struct {
 	Topics    []string `yaml:"Topics"`
+	GetTopics string
 }
 
 func NewSubscriber() (*Subscriber, error) {
