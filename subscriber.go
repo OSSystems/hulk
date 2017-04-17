@@ -35,7 +35,25 @@ func (s *Subscriber) Receiver(topic string) {
 }
 
 func (s *Subscriber) LoadEnvironment() (map[string]string, error) {
-	env, err := godotenv.Read(s.EnvironmentFile)
+	environment := make(map[string]string)
+
+	for _, file := range s.EnvironmentFiles {
+		env, err := godotenv.Read(file)
+		if err != nil {
+			return nil, err
+		}
+
+		for key, value := range env {
+			if _, ok := environment[key]; ok {
+				return nil, fmt.Errorf("Duplicated environment variable: %s", key)
+			}
+
+			environment[key] = value
+		}
+	}
+
+	return environment, nil
+}
 	if err != nil {
 		return nil, err
 	}
