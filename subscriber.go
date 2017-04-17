@@ -13,9 +13,9 @@ import (
 )
 
 type Subscriber struct {
-	Topics          []string `yaml:"Topics"`
-	GetTopics       string
-	EnvironmentFile string
+	Topics           []string `yaml:"Topics"`
+	ExtraTopics      string   `yaml:"ExtraTopics"`
+	EnvironmentFiles []string `yaml:"EnvironmentFiles"`
 
 	SubscriberHooks `yaml:"Hooks"`
 }
