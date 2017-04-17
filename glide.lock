@@ -1,0 +1,38 @@
+hash: 93249ae582a1107e0fc37a13098f0fb7f0f968f4f647dbd293a30d246573ba7a
+updated: 2017-04-17T15:03:51.445173831-03:00
+imports:
+- name: github.com/eclipse/paho.mqtt.golang
+  version: c37a0a275c2de30bf1c7eb072dd6bef09a93c666
+  subpackages:
+  - packets
+- name: github.com/fsnotify/fsnotify
+  version: 4da3e2cfbabc9f751898f250b49f2439785783a1
+- name: github.com/imkira/go-interpol
+  version: 5accad8134979a6ac504d456a6c7f1c53da237ca
+- name: github.com/joho/godotenv
+  version: 325433c502d409f3c3dc820098fb0cfe38d98dc7
+- name: golang.org/x/net
+  version: 5602c733f70afc6dcec6766be0d5034d4c4f14de
+  subpackages:
+  - websocket
+- name: golang.org/x/sys
+  version: f3918c30c5c2cb527c0b071a27c35120a6c0719a
+  subpackages:
+  - unix
+- name: gopkg.in/yaml.v2
+  version: cd8b52f8269e0feb286dfeef29f8fe4d5b397e0b
+testImports:
+- name: github.com/bouk/monkey
+  version: 5dace501dd6dad5b369748946db553903c8e839c
+- name: github.com/davecgh/go-spew
+  version: 04cdfd42973bb9c8589fd6a731800cf222fde1a9
+  subpackages:
+  - spew
+- name: github.com/pmezard/go-difflib
+  version: d8ed2627bdf02c080bf22230dbb337003b7aba2d
+  subpackages:
+  - difflib
+- name: github.com/stretchr/testify
+  version: 4d4bfba8f1d1027c4fdbe371823030df51419987
+  subpackages:
+  - assert
