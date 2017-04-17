@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"strings"
 
 	interpol "github.com/imkira/go-interpol"
 	"github.com/joho/godotenv"
@@ -32,7 +34,12 @@ func NewSubscriber() (*Subscriber, error) {
 }
 
 func (s *Subscriber) Receiver(topic string, payload []byte) {
-	fmt.Println(topic)
+	env, err := s.LoadEnvironment()
+	if err != nil {
+		return
+	}
+
+	s.ExecuteHook(s.SubscriberHooks.OnPublish, payload, env)
 }
 
 func (s *Subscriber) LoadEnvironment() (map[string]string, error) {
@@ -72,6 +79,37 @@ func (s *Subscriber) ExpandTopics() error {
 
 		topics = append(topics, expanded)
 	}
+
+	return nil
+}
+
+func (s *Subscriber) ExecuteHook(cmdLine string, payload []byte, env map[string]string) error {
+	args := strings.Split(cmdLine, " ")
+	command := args[0]
+
+	if len(args) > 1 {
+		args = args[1:]
+	}
+
+	cmd := exec.Command(command, args...)
+
+	for key, value := range env {
+		cmd.Env = append(cmd.Env, fmt.Sprintf("%s=%s", key, value))
+	}
+
+	stdin, err := cmd.StdinPipe()
+	if err != nil {
+		return err
+	}
+
+	defer stdin.Close()
+
+	err = cmd.Start()
+	if err != nil {
+		return err
+	}
+
+	stdin.Write(payload)
 
 	return nil
 }
