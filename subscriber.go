@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
+	interpol "github.com/imkira/go-interpol"
 	"github.com/joho/godotenv"
 
 	"io/ioutil"
@@ -54,11 +55,25 @@ func (s *Subscriber) LoadEnvironment() (map[string]string, error) {
 
 	return environment, nil
 }
+
+func (s *Subscriber) ExpandTopics() error {
+	env, err := s.LoadEnvironment()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return env, nil
+	topics := s.Topics[:0]
+
+	for _, topic := range s.Topics {
+		expanded, err := interpol.WithMap(topic, env)
+		if err != nil {
+			return err
+		}
+
+		topics = append(topics, expanded)
+	}
+
+	return nil
 }
 
 func LoadSubscribers(path string) ([]*Subscriber, error) {
