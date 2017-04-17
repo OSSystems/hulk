@@ -31,7 +31,7 @@ func NewSubscriber() (*Subscriber, error) {
 	return subscriber, nil
 }
 
-func (s *Subscriber) Receiver(topic string) {
+func (s *Subscriber) Receiver(topic string, payload []byte) {
 	fmt.Println(topic)
 }
 

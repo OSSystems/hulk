@@ -46,12 +46,12 @@ func (b *Broker) Unsubscribe(subscriber *Subscriber, topic string) error {
 	return nil
 }
 
-func (b *Broker) Publish(topic string) {
+func (b *Broker) Publish(topic string, payload []byte) {
 	subscriber, _ := b.Subscriptions[topic]
 
 	if subscriber == nil {
 		return
 	}
 
-	subscriber.Receiver(topic)
+	subscriber.Receiver(topic, payload)
 }

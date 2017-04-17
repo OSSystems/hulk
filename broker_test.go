@@ -47,7 +47,7 @@ func TestPublish(t *testing.T) {
 	subscriber, _ := NewSubscriber()
 	subscriber.Topics = topics
 
-	monkey.PatchInstanceMethod(reflect.TypeOf(subscriber), "Receiver", func(_ *Subscriber, topic string) {
+	monkey.PatchInstanceMethod(reflect.TypeOf(subscriber), "Receiver", func(_ *Subscriber, topic string, payload []byte) {
 		published = append(published, topic)
 	})
 
@@ -55,7 +55,7 @@ func TestPublish(t *testing.T) {
 	broker.Subscribe(subscriber)
 
 	for _, topic := range topics {
-		broker.Publish(topic)
+		broker.Publish(topic, []byte(""))
 	}
 
 	assert.Equal(t, topics, published)
