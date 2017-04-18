@@ -1,26 +1,29 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/OSSystems/hulk/mqtt"
+	"github.com/Sirupsen/logrus"
 	MQTT "github.com/eclipse/paho.mqtt.golang"
 )
 
 func main() {
+	logger := logrus.New()
+
 	opts := MQTT.NewClientOptions()
 	opts.AddBroker("tcp://localhost:1883")
 
 	client := mqtt.NewPahoClient(opts)
-	client.Connect()
 
-	h := NewHulk(client, "/tmp/")
+	if err := client.Connect(); err != nil {
+		logger.Fatal(err)
+	}
+
+	h := NewHulk(client, "/tmp/", logger)
 
 	done := make(chan bool)
 
-	err := h.LoadSubscribers()
-	if err != nil {
-		fmt.Println(err)
+	if err := h.LoadSubscribers(); err != nil {
+		logger.Fatal(err)
 	}
 
 	<-done

@@ -1,23 +1,24 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/OSSystems/hulk/core"
 	"github.com/OSSystems/hulk/mqtt"
+	"github.com/Sirupsen/logrus"
 )
 
 type Hulk struct {
 	path   string
 	broker *core.Broker
 	client mqtt.MqttClient
+	logger *logrus.Logger
 }
 
-func NewHulk(client mqtt.MqttClient, path string) *Hulk {
+func NewHulk(client mqtt.MqttClient, path string, logger *logrus.Logger) *Hulk {
 	return &Hulk{
 		client: client,
 		path:   path,
 		broker: core.NewBroker(),
+		logger: logger,
 	}
 }
 
@@ -30,12 +31,12 @@ func (h *Hulk) LoadSubscribers() error {
 	for _, subscriber := range subscribers {
 		err := subscriber.LoadEnvironmentFiles()
 		if err != nil {
-			fmt.Println(err)
+			h.logger.Warn(err)
 		}
 
 		err = subscriber.ExpandTopics()
 		if err != nil {
-			fmt.Println(err)
+			h.logger.Warn(err)
 		}
 
 		if err = h.broker.Subscribe(subscriber); err != nil {
