@@ -43,7 +43,7 @@ func (h *Hulk) LoadSubscribers() error {
 			continue
 		}
 
-		for _, topic := range subscriber.Topics {
+		for _, topic := range subscriber.GetTopics() {
 			handler := func(topic string, payload []byte) {
 				h.broker.Publish(topic, payload)
 			}

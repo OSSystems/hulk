@@ -15,7 +15,7 @@ func NewBroker() *Broker {
 }
 
 func (b *Broker) Subscribe(subscriber *Subscriber) error {
-	for _, topic := range subscriber.Topics {
+	for _, topic := range subscriber.topics {
 		if s, ok := b.Subscriptions[topic]; ok {
 			if s != subscriber {
 				return fmt.Errorf("Topic \"%s\" is already subscribed by another subscriber", topic)

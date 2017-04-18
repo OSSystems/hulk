@@ -7,40 +7,43 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/OSSystems/hulk/unit"
 	interpol "github.com/imkira/go-interpol"
 	"github.com/joho/godotenv"
 
 	"io/ioutil"
-
-	yaml "gopkg.in/yaml.v2"
 )
 
 type Subscriber struct {
-	Topics           []string          `yaml:"Topics"`
-	ExtraTopics      string            `yaml:"ExtraTopics"`
-	EnvironmentFiles []string          `yaml:"EnvironmentFiles"`
-	Environment      map[string]string `yaml:"-"`
-
-	SubscriberHooks `yaml:"Hooks"`
-}
-
-type SubscriberHooks struct {
-	OnSubscribe string `yaml:"OnSubscribe"`
-	OnPublish   string `yaml:"OnPublish"`
+	unit        *unit.Subscriber
+	topics      []string
+	extraTopics []string
+	environment map[string]string
 }
 
 func NewSubscriber() *Subscriber {
 	return &Subscriber{
-		Environment: make(map[string]string),
+		environment: make(map[string]string),
 	}
 }
 
+func (s *Subscriber) LoadUnit(file string) error {
+	data, err := ioutil.ReadFile(file)
+
+	s.unit, err = unit.SubscriberFromData(data)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (s *Subscriber) Receiver(topic string, payload []byte) {
-	s.ExecuteHook(s.SubscriberHooks.OnPublish, payload)
+	s.ExecuteHook(s.unit.Hooks.OnPublish, payload)
 }
 
 func (s *Subscriber) LoadEnvironmentFiles() error {
-	for _, file := range s.EnvironmentFiles {
+	for _, file := range s.unit.EnvironmentFiles {
 		err := s.LoadEnvironment(file)
 		if err != nil {
 			return err
@@ -57,29 +60,37 @@ func (s *Subscriber) LoadEnvironment(file string) error {
 	}
 
 	for key, value := range env {
-		if _, ok := s.Environment[key]; ok {
+		if _, ok := s.environment[key]; ok {
 			return fmt.Errorf("Duplicated environment variable: %s", key)
 		}
 
-		s.Environment[key] = value
+		s.environment[key] = value
 	}
 
 	return nil
 }
 
 func (s *Subscriber) ExpandTopics() error {
-	topics := s.Topics[:0]
+	s.topics = s.topics[:0]
 
-	for _, topic := range s.Topics {
-		expanded, err := interpol.WithMap(topic, s.Environment)
+	// Append unexpanded extraTopics to topics specified in unit file
+	allTopics := s.unit.Topics
+	allTopics = append(allTopics, s.extraTopics...)
+
+	for _, topic := range allTopics {
+		expanded, err := interpol.WithMap(topic, s.environment)
 		if err != nil {
 			return err
 		}
 
-		topics = append(topics, expanded)
+		s.topics = append(s.topics, expanded)
 	}
 
 	return nil
+}
+
+func (s *Subscriber) GetTopics() []string {
+	return s.topics
 }
 
 func (s *Subscriber) CreateHookCommand(cmdLine string) *exec.Cmd {
@@ -92,7 +103,7 @@ func (s *Subscriber) CreateHookCommand(cmdLine string) *exec.Cmd {
 
 	cmd := exec.Command(command, args...)
 
-	for key, value := range s.Environment {
+	for key, value := range s.environment {
 		cmd.Env = append(cmd.Env, fmt.Sprintf("%s=%s", key, value))
 	}
 
@@ -138,13 +149,7 @@ func LoadSubscribers(path string) ([]*Subscriber, error) {
 	for _, file := range files {
 		subscriber := NewSubscriber()
 
-		data, err := ioutil.ReadFile(file)
-		if err != nil {
-			return nil, err
-		}
-
-		err = yaml.Unmarshal(data, subscriber)
-		if err != nil {
+		if err := subscriber.LoadUnit(file); err != nil {
 			return nil, err
 		}
 

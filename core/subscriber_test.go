@@ -11,23 +11,25 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/OSSystems/hulk/unit"
 	"github.com/bouk/monkey"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestSubscriberExpandTopics(t *testing.T) {
 	s := NewSubscriber()
-
-	s.Environment = map[string]string{
-		"VARIABLE": "value",
+	s.unit = &unit.Subscriber{
+		Topics: []string{"{VARIABLE}"},
 	}
 
-	s.Topics = []string{"{VARIABLE}"}
+	s.environment = map[string]string{
+		"VARIABLE": "value",
+	}
 
 	err := s.ExpandTopics()
 	assert.NoError(t, err)
 
-	assert.Equal(t, []string{s.Environment["VARIABLE"]}, s.Topics)
+	assert.Equal(t, []string{s.environment["VARIABLE"]}, s.topics)
 }
 
 func TestSubscriberExecuteHook(t *testing.T) {
@@ -57,7 +59,7 @@ func TestSubscriberExecuteHook(t *testing.T) {
 
 	for _, env := range expectedDump.Env {
 		slices := strings.Split(env, "=")
-		s.Environment[slices[0]] = slices[1]
+		s.environment[slices[0]] = slices[1]
 	}
 
 	err := s.ExecuteHook(strings.Join(cmdLine, " "), []byte(expectedDump.Stdin))
