@@ -16,9 +16,10 @@ import (
 )
 
 type Subscriber struct {
-	Topics           []string `yaml:"Topics"`
-	ExtraTopics      string   `yaml:"ExtraTopics"`
-	EnvironmentFiles []string `yaml:"EnvironmentFiles"`
+	Topics           []string          `yaml:"Topics"`
+	ExtraTopics      string            `yaml:"ExtraTopics"`
+	EnvironmentFiles []string          `yaml:"EnvironmentFiles"`
+	Environment      map[string]string `yaml:"-"`
 
 	SubscriberHooks `yaml:"Hooks"`
 }
@@ -34,45 +35,37 @@ func NewSubscriber() (*Subscriber, error) {
 }
 
 func (s *Subscriber) Receiver(topic string, payload []byte) {
-	env, err := s.LoadEnvironment()
-	if err != nil {
-		return
-	}
-
-	s.ExecuteHook(s.SubscriberHooks.OnPublish, payload, env)
+	s.ExecuteHook(s.SubscriberHooks.OnPublish, payload)
 }
 
-func (s *Subscriber) LoadEnvironment() (map[string]string, error) {
+func (s *Subscriber) LoadEnvironment() error {
 	environment := make(map[string]string)
 
 	for _, file := range s.EnvironmentFiles {
 		env, err := godotenv.Read(file)
 		if err != nil {
-			return nil, err
+			return err
 		}
 
 		for key, value := range env {
 			if _, ok := environment[key]; ok {
-				return nil, fmt.Errorf("Duplicated environment variable: %s", key)
+				return fmt.Errorf("Duplicated environment variable: %s", key)
 			}
 
 			environment[key] = value
 		}
 	}
 
-	return environment, nil
+	s.Environment = environment
+
+	return nil
 }
 
 func (s *Subscriber) ExpandTopics() error {
-	env, err := s.LoadEnvironment()
-	if err != nil {
-		return err
-	}
-
 	topics := s.Topics[:0]
 
 	for _, topic := range s.Topics {
-		expanded, err := interpol.WithMap(topic, env)
+		expanded, err := interpol.WithMap(topic, s.Environment)
 		if err != nil {
 			return err
 		}
@@ -83,7 +76,7 @@ func (s *Subscriber) ExpandTopics() error {
 	return nil
 }
 
-func (s *Subscriber) ExecuteHook(cmdLine string, payload []byte, env map[string]string) error {
+func (s *Subscriber) ExecuteHook(cmdLine string, payload []byte) error {
 	args := strings.Split(cmdLine, " ")
 	command := args[0]
 
@@ -93,7 +86,7 @@ func (s *Subscriber) ExecuteHook(cmdLine string, payload []byte, env map[string]
 
 	cmd := exec.Command(command, args...)
 
-	for key, value := range env {
+	for key, value := range s.Environment {
 		cmd.Env = append(cmd.Env, fmt.Sprintf("%s=%s", key, value))
 	}
 
