@@ -11,7 +11,7 @@ import (
 )
 
 func TestSubscribe(t *testing.T) {
-	subscriber, _ := NewSubscriber()
+	subscriber := NewSubscriber()
 	subscriber.Topics = []string{"topic"}
 
 	broker := NewBroker()
@@ -30,7 +30,7 @@ func TestSubscribe(t *testing.T) {
 func TestUnsubscribe(t *testing.T) {
 	topic := "topic"
 
-	subscriber, _ := NewSubscriber()
+	subscriber := NewSubscriber()
 	subscriber.Topics = []string{topic}
 
 	broker := NewBroker()
@@ -44,7 +44,7 @@ func TestPublish(t *testing.T) {
 	topics := []string{"topic1", "topic2"}
 	published := []string{}
 
-	subscriber, _ := NewSubscriber()
+	subscriber := NewSubscriber()
 	subscriber.Topics = topics
 
 	monkey.PatchInstanceMethod(reflect.TypeOf(subscriber), "Receiver", func(_ *Subscriber, topic string, payload []byte) {

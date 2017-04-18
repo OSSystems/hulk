@@ -29,9 +29,8 @@ type SubscriberHooks struct {
 	OnPublish   string `yaml:"OnPublish"`
 }
 
-func NewSubscriber() (*Subscriber, error) {
-	subscriber := &Subscriber{}
-	return subscriber, nil
+func NewSubscriber() *Subscriber {
+	return &Subscriber{}
 }
 
 func (s *Subscriber) Receiver(topic string, payload []byte) {
@@ -124,7 +123,7 @@ func LoadSubscribers(path string) ([]*Subscriber, error) {
 	subscribers := []*Subscriber{}
 
 	for _, file := range files {
-		subscriber, _ := NewSubscriber()
+		subscriber := NewSubscriber()
 
 		data, err := ioutil.ReadFile(file)
 		if err != nil {
