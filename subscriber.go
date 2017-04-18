@@ -30,32 +30,39 @@ type SubscriberHooks struct {
 }
 
 func NewSubscriber() *Subscriber {
-	return &Subscriber{}
+	return &Subscriber{
+		Environment: make(map[string]string),
+	}
 }
 
 func (s *Subscriber) Receiver(topic string, payload []byte) {
 	s.ExecuteHook(s.SubscriberHooks.OnPublish, payload)
 }
 
-func (s *Subscriber) LoadEnvironment() error {
-	environment := make(map[string]string)
-
+func (s *Subscriber) LoadEnvironmentFiles() error {
 	for _, file := range s.EnvironmentFiles {
-		env, err := godotenv.Read(file)
+		err := s.LoadEnvironment(file)
 		if err != nil {
 			return err
 		}
-
-		for key, value := range env {
-			if _, ok := environment[key]; ok {
-				return fmt.Errorf("Duplicated environment variable: %s", key)
-			}
-
-			environment[key] = value
-		}
 	}
 
-	s.Environment = environment
+	return nil
+}
+
+func (s *Subscriber) LoadEnvironment(file string) error {
+	env, err := godotenv.Read(file)
+	if err != nil {
+		return err
+	}
+
+	for key, value := range env {
+		if _, ok := s.Environment[key]; ok {
+			return fmt.Errorf("Duplicated environment variable: %s", key)
+		}
+
+		s.Environment[key] = value
+	}
 
 	return nil
 }
