@@ -82,7 +82,7 @@ func (s *Subscriber) ExpandTopics() error {
 	return nil
 }
 
-func (s *Subscriber) ExecuteHook(cmdLine string, payload []byte) error {
+func (s *Subscriber) CreateHookCommand(cmdLine string) *exec.Cmd {
 	args := strings.Split(cmdLine, " ")
 	command := args[0]
 
@@ -95,6 +95,12 @@ func (s *Subscriber) ExecuteHook(cmdLine string, payload []byte) error {
 	for key, value := range s.Environment {
 		cmd.Env = append(cmd.Env, fmt.Sprintf("%s=%s", key, value))
 	}
+
+	return cmd
+}
+
+func (s *Subscriber) ExecuteHook(cmdLine string, payload []byte) error {
+	cmd := s.CreateHookCommand(cmdLine)
 
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
