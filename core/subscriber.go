@@ -17,12 +17,18 @@ type Subscriber struct {
 	topics      []string
 	extraTopics []string
 	environment map[string]string
+
+	Hooks *Hooker
 }
 
 func NewSubscriber() *Subscriber {
-	return &Subscriber{
+	s := &Subscriber{
 		environment: make(map[string]string),
 	}
+
+	s.Hooks = NewHooker(s)
+
+	return s
 }
 
 func (s *Subscriber) Initialize() error {
@@ -49,7 +55,7 @@ func (s *Subscriber) LoadUnit(file string) error {
 }
 
 func (s *Subscriber) Receiver(topic string, payload []byte) {
-	s.ExecuteHook(s.unit.Hooks.OnPublish, payload)
+	s.Hooks.OnPublish(topic, payload)
 }
 
 func (s *Subscriber) LoadEnvironmentFiles() error {

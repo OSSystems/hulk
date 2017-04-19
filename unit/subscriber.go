@@ -6,11 +6,13 @@ type Subscriber struct {
 	Topics           []string `yaml:"Topics"`
 	ExtraTopics      string   `yaml:"ExtraTopics"`
 	EnvironmentFiles []string `yaml:"EnvironmentFiles"`
+	Hooks            `yaml:"Hooks"`
+}
 
-	Hooks struct {
-		OnSubscribe string `yaml:"OnSubscribe"`
-		OnPublish   string `yaml:"OnPublish"`
-	} `yaml:"Hooks"`
+type Hooks struct {
+	OnSubscribe     string `yaml:"OnSubscribe"`
+	OnSubscribeFail string `yaml:"OnSubscribeFail"`
+	OnPublish       string `yaml:"OnPublish"`
 }
 
 func SubscriberFromData(data []byte) (*Subscriber, error) {

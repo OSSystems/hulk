@@ -72,7 +72,11 @@ func (h *Hulk) InitializeSubscribers(subscribers []*core.Subscriber) error {
 				h.broker.Publish(topic, payload)
 			}
 
-			h.client.Subscribe(topic, 0, handler)
+			if err := h.client.Subscribe(topic, 0, handler); err == nil {
+				subscriber.Hooks.OnSubscribe(topic)
+			} else {
+				subscriber.Hooks.OnSubscribeFail(topic)
+			}
 		}
 	}
 
