@@ -2,9 +2,7 @@ package core
 
 import (
 	"fmt"
-	"os"
 	"os/exec"
-	"path/filepath"
 	"strings"
 
 	"github.com/OSSystems/hulk/unit"
@@ -25,6 +23,18 @@ func NewSubscriber() *Subscriber {
 	return &Subscriber{
 		environment: make(map[string]string),
 	}
+}
+
+func (s *Subscriber) Initialize() error {
+	if err := s.LoadEnvironmentFiles(); err != nil {
+		return err
+	}
+
+	if err := s.ExpandTopics(); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (s *Subscriber) LoadUnit(file string) error {
@@ -128,33 +138,4 @@ func (s *Subscriber) ExecuteHook(cmdLine string, payload []byte) error {
 	stdin.Write(payload)
 
 	return nil
-}
-
-func LoadSubscribers(path string) ([]*Subscriber, error) {
-	if stat, err := os.Stat(path); err != nil {
-		return nil, err
-	} else {
-		if !stat.IsDir() {
-			return nil, fmt.Errorf("Not a directory")
-		}
-	}
-
-	files, err := filepath.Glob(filepath.Join(path, "*.yaml"))
-	if err != nil {
-		return nil, err
-	}
-
-	subscribers := []*Subscriber{}
-
-	for _, file := range files {
-		subscriber := NewSubscriber()
-
-		if err := subscriber.LoadUnit(file); err != nil {
-			return nil, err
-		}
-
-		subscribers = append(subscribers, subscriber)
-	}
-
-	return subscribers, nil
 }
