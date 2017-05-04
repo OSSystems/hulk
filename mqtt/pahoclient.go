@@ -5,6 +5,7 @@ import MQTT "github.com/eclipse/paho.mqtt.golang"
 type PahoClient interface {
 	Connect() error
 	Subscribe(topic string, qos byte, callback MqttMessageHandler) error
+	Unsubscribe(topic string)
 }
 
 type pahoClient struct {
@@ -34,4 +35,8 @@ func (paho pahoClient) Subscribe(topic string, qos byte, callback MqttMessageHan
 	token.Wait()
 
 	return token.Error()
+}
+
+func (paho pahoClient) Unsubscribe(topic string) {
+	paho.mqtt.Unsubscribe(topic)
 }
