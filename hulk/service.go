@@ -113,15 +113,15 @@ func (s *Service) subscribe() {
 
 // messageHandler handles received messages on topic
 func (s *Service) messageHandler(topic string, payload []byte) {
-	err := s.executeHook(OnReceiveHook, payload)
+	err := s.executeHook(OnReceiveHook, topic, payload)
 	if err != nil {
 		s.hulk.logger.Warn(err)
 	}
 }
 
 // executeHook executes hook name
-func (s *Service) executeHook(name HookName, payload []byte) error {
-	hook := NewHook(s, name)
+func (s *Service) executeHook(name HookName, topic string, payload []byte) error {
+	hook := NewHook(s, name, topic)
 
 	if hook == nil {
 		s.hulk.logger.Debug(fmt.Sprintf("[%s] skipping hook executation: %s is empty", s.name, HookNameToString(name)))

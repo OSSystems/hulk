@@ -21,13 +21,15 @@ var hookNames = map[HookName]string{
 type Hook struct {
 	service *Service
 	name    HookName
+	topic   string
 }
 
 // NewHook creates a new Hook instance
-func NewHook(service *Service, name HookName) *Hook {
+func NewHook(service *Service, name HookName, topic string) *Hook {
 	hook := &Hook{
 		service: service,
 		name:    name,
+		topic:   topic,
 	}
 
 	if hook.cmdLine() == "" {
@@ -58,6 +60,8 @@ func (h *Hook) createCmd() *exec.Cmd {
 	for key, value := range h.service.environment {
 		cmd.Env = append(cmd.Env, fmt.Sprintf("%s=%s", key, value))
 	}
+
+	cmd.Env = append(cmd.Env, fmt.Sprintf("TOPIC=%s", h.topic))
 
 	return cmd
 }
