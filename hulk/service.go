@@ -6,7 +6,7 @@ import (
 	"os"
 	"path"
 
-	interpol "github.com/imkira/go-interpol"
+	"github.com/OSSystems/hulk/template"
 	"github.com/joho/godotenv"
 	"github.com/pkg/errors"
 )
@@ -87,13 +87,13 @@ func (s *Service) expandTopics() {
 	s.topics = s.topics[:0]
 
 	for _, topic := range s.manifest.Topics {
-		expanded, err := interpol.WithMap(topic, s.environment)
+		expanded, err := template.Expand(topic, s.environment)
 		if err != nil {
 			s.hulk.logger.Warn(errors.Wrapf(err, "[%s] failed to expand topic: %s", s.name, topic))
 			continue
 		}
 
-		s.topics = append(s.topics, expanded)
+		s.topics = append(s.topics, expanded...)
 	}
 }
 
