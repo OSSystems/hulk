@@ -4,6 +4,8 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"path/filepath"
+	"strings"
 
 	"github.com/OSSystems/hulk/log"
 	"github.com/OSSystems/hulk/template"
@@ -30,9 +32,11 @@ func NewService(hulk *Hulk, filename string) (*Service, error) {
 		return nil, err
 	}
 
+	basename := path.Base(filename)
+
 	return &Service{
 		hulk:        hulk,
-		name:        path.Base(filename),
+		name:        strings.TrimSuffix(basename, filepath.Ext(basename)),
 		manifest:    manifest,
 		environment: make(map[string]string),
 	}, nil
