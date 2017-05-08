@@ -8,6 +8,27 @@ import (
 
 const templateRegexp = `{(?P<name>[a-zA-Z_][a-zA-Z0-9_]+)(?P<array>\[.?\])?(?P<optional>\?)?}`
 
+// Errors returned when expanding a variable
+var (
+	ErrRequiredValueNotFound = "No value for required variable"
+	ErrOptionalValueNotFound = "No value for optional variable"
+)
+
+// VariableExpandError implements an error returned when expanding a variable
+type VariableExpandError struct {
+	Name       string
+	IsOptional bool
+}
+
+// Error returns a string representation of an VariableExpandError
+func (e *VariableExpandError) Error() string {
+	if e.IsOptional {
+		return ErrOptionalValueNotFound
+	}
+
+	return ErrRequiredValueNotFound
+}
+
 type template struct {
 	content   string
 	variables []*templateVariable
@@ -39,8 +60,8 @@ func (t *template) expand(values map[string]string) ([]string, error) {
 
 	for i, variable := range t.variables {
 		// Check if contains the required variable value
-		if _, ok := values[variable.name]; !ok && !variable.isOptional {
-			return nil, fmt.Errorf("No value for required variable: %s", variable.name)
+		if _, ok := values[variable.name]; !ok {
+			return nil, &VariableExpandError{Name: variable.name, IsOptional: variable.isOptional}
 		}
 
 		// Expand content

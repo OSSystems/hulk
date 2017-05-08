@@ -20,6 +20,7 @@ type Service struct {
 	name        string
 	manifest    Manifest
 	topics      []string
+	enabled     bool
 	environment map[string]string
 }
 
@@ -39,6 +40,7 @@ func NewService(hulk *Hulk, filename string) (*Service, error) {
 		name:        strings.TrimSuffix(basename, filepath.Ext(basename)),
 		manifest:    manifest,
 		environment: make(map[string]string),
+		enabled:     true,
 	}, nil
 }
 
@@ -100,11 +102,29 @@ func (s *Service) expandTopics() {
 	for _, topic := range s.manifest.Topics {
 		expanded, err := template.Expand(topic, s.environment)
 		if err != nil {
-			log.WithFields(logrus.Fields{
-				"service": s.name,
-				"topic":   topic,
-			}).Warn(errors.Wrapf(err, "failed to expand topic"))
-			continue
+			if ve, ok := err.(*template.VariableExpandError); ok {
+				logEntry := log.WithFields(logrus.Fields{
+					"service":  s.name,
+					"topic":    topic,
+					"variable": ve.Name,
+				})
+
+				if ve.IsOptional {
+					logEntry.Warn(errors.Wrapf(err, "failed to expand topic"))
+
+					// If value of variable is optional them ignore ONLY the current topic
+					continue
+				} else {
+					logEntry.Error(errors.Wrapf(err, "failed to expand topic"))
+
+					// If the value of variable is required them disable service,
+					// clear the topic list and ignore ALL topics from manifest
+					s.enabled = false
+					s.topics = s.topics[:0]
+
+					break
+				}
+			}
 		}
 
 		s.topics = append(s.topics, expanded...)
@@ -113,7 +133,10 @@ func (s *Service) expandTopics() {
 
 // subscribe subscribes to topics
 func (s *Service) subscribe() {
-	log.WithFields(logrus.Fields{"service": s.name}).Info("subscribing to topics")
+	if !s.enabled {
+		log.WithFields(logrus.Fields{"service": s.name}).Info("skipping subscribe while service is disabled")
+		return
+	}
 
 	for _, topic := range s.topics {
 		log.WithFields(logrus.Fields{

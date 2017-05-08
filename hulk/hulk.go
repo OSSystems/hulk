@@ -81,8 +81,9 @@ func (h *Hulk) Services() []*types.Service {
 
 	for _, service := range h.services {
 		s := &types.Service{
-			Name:   service.name,
-			Topics: service.topics,
+			Name:    service.name,
+			Enabled: service.enabled,
+			Topics:  service.topics,
 		}
 
 		s.Hooks.OnReceive = service.manifest.Hooks.OnReceive
@@ -153,6 +154,7 @@ func (h *Hulk) reloadServices(file string) {
 	for _, service := range h.services {
 		for _, envfile := range service.manifest.EnvironmentFiles {
 			if envfile == file {
+				service.enabled = true
 				service.loadEnvironment()
 				service.expandTopics()
 				service.subscribe()
