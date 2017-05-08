@@ -8,27 +8,6 @@ import (
 
 const templateRegexp = `{(?P<name>[a-zA-Z_][a-zA-Z0-9_]+)(?P<array>\[.?\])?(?P<optional>\?)?}`
 
-// Errors returned when expanding a variable
-var (
-	ErrRequiredValueNotFound = "No value for required variable"
-	ErrOptionalValueNotFound = "No value for optional variable"
-)
-
-// VariableExpandError implements an error returned when expanding a variable
-type VariableExpandError struct {
-	Name       string
-	IsOptional bool
-}
-
-// Error returns a string representation of an VariableExpandError
-func (e *VariableExpandError) Error() string {
-	if e.IsOptional {
-		return ErrOptionalValueNotFound
-	}
-
-	return ErrRequiredValueNotFound
-}
-
 type template struct {
 	content   string
 	variables []*templateVariable
@@ -151,31 +130,6 @@ func (t *template) match() []map[string]string {
 	}
 
 	return result
-}
-
-type templateVariable struct {
-	name           string
-	isArray        bool
-	arraySeparator string
-	isOptional     bool
-}
-
-func (v *templateVariable) expanded(content string, value string) string {
-	re := regexp.MustCompile(regexp.QuoteMeta(v.string()))
-	return re.ReplaceAllString(content, value)
-}
-
-func (v *templateVariable) string() string {
-	array := map[bool]string{true: "[" + v.arraySeparator + "]", false: ""}
-	optional := map[bool]string{true: "?", false: ""}
-
-	return fmt.Sprintf("{%s%s%s}", v.name, array[v.isArray], optional[v.isOptional])
-}
-
-type arrayItem struct {
-	variable *templateVariable
-	value    string
-	index    int
 }
 
 // Expand expands values into template content
