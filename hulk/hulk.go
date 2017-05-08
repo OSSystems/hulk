@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/OSSystems/hulk/api/types"
 	"github.com/OSSystems/hulk/log"
 	"github.com/OSSystems/hulk/mqtt"
 	"github.com/Sirupsen/logrus"
@@ -73,6 +74,23 @@ func (h *Hulk) LoadServices() error {
 	}
 
 	return nil
+}
+
+func (h *Hulk) Services() []*types.Service {
+	services := []*types.Service{}
+
+	for _, service := range h.services {
+		s := &types.Service{
+			Name:   service.name,
+			Topics: service.topics,
+		}
+
+		s.Hooks.OnReceive = service.manifest.Hooks.OnReceive
+
+		services = append(services, s)
+	}
+
+	return services
 }
 
 // addService adds service to managed services by Hulk

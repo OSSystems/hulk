@@ -3,7 +3,12 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/signal"
+	"syscall"
 
+	"github.com/OSSystems/hulk/api/server"
+	"github.com/OSSystems/hulk/api/server/router"
+	"github.com/OSSystems/hulk/api/server/router/service"
 	"github.com/OSSystems/hulk/hulk"
 	"github.com/OSSystems/hulk/log"
 	"github.com/OSSystems/hulk/mqtt"
@@ -15,6 +20,7 @@ import (
 var (
 	servicesDir   = "/etc/hulk.d/"
 	brokerAddress = "tcp://localhost:1883"
+	listenAddress = "unix:///var/run/hulkd.sock"
 	logLevel      = "warn"
 )
 
@@ -57,6 +63,27 @@ var RootCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
+		routes := []router.Route{}
+		routes = append(routes, service.Routes(hulk)...)
+
+		listener, err := server.NewListener(listenAddress)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		log.Infof("Hulk API listening on %s", listenAddress)
+
+		sigc := make(chan os.Signal, 1)
+		signal.Notify(sigc, os.Interrupt, os.Kill, syscall.SIGTERM)
+
+		go func() {
+			<-sigc
+			listener.Close()
+			os.Exit(0)
+		}()
+
+		go server.Listen(listener, router.NewRouter(routes))
+
 		hulk.Run()
 	},
 }
@@ -64,6 +91,7 @@ var RootCmd = &cobra.Command{
 func main() {
 	RootCmd.PersistentFlags().StringVarP(&servicesDir, "dir", "d", servicesDir, "Path to directory with services")
 	RootCmd.PersistentFlags().StringVarP(&brokerAddress, "broker", "b", brokerAddress, "Broker address to connect")
+	RootCmd.PersistentFlags().StringVarP(&listenAddress, "address", "a", listenAddress, "API server listen address")
 	RootCmd.PersistentFlags().StringVarP(&logLevel, "log-level", "l", logLevel, "Set the logging level (panic|fatal|error|warn|info|debug)")
 
 	if err := RootCmd.Execute(); err != nil {
