@@ -54,7 +54,6 @@ func (s *Service) loadEnvironmentFile(file string) {
 		"file":    file,
 	}).Info("loading environment variables")
 
-retry:
 	env, err := godotenv.Read(file)
 	if err != nil {
 		if os.IsNotExist(err) {
@@ -62,19 +61,6 @@ retry:
 				"service": s.name,
 				"file":    file,
 			}).Warn("environment file does not exists")
-
-			// Create an empty environment file
-			err := ioutil.WriteFile(file, []byte(""), 0666)
-			if err != nil {
-				log.WithFields(logrus.Fields{
-					"service": s.name,
-					"file":    file,
-				}).Warn(errors.Wrapf(err, "failed to create empty environment file"))
-				return
-			}
-
-			// Try again
-			goto retry
 		} else {
 			log.WithFields(logrus.Fields{
 				"service": s.name,
