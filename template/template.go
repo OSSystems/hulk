@@ -40,7 +40,7 @@ func (t *template) expand(values map[string]string) ([]string, error) {
 	for i, variable := range t.variables {
 		// Check if contains the required variable value
 		if _, ok := values[variable.name]; !ok && !variable.isOptional {
-			return nil, fmt.Errorf("Value not found for required variable: %s", variable.name)
+			return nil, fmt.Errorf("No value for required variable: %s", variable.name)
 		}
 
 		// Expand content
@@ -77,7 +77,7 @@ func (t *template) expandArrays(content string, arrayValues map[int]map[*templat
 	for _, variables := range arrayValues {
 		for variable, values := range variables {
 			if length > -1 && length != len(values) {
-				return nil, fmt.Errorf("Different array size: %s (actual: %d, expected: %d)", variable.name, len(values), length)
+				return nil, fmt.Errorf("Array size differs: %s (%d should be %d)", variable.name, len(values), length)
 			}
 
 			length = len(values)
