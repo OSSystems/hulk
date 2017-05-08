@@ -1,12 +1,13 @@
 package hulk
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
 
+	"github.com/OSSystems/hulk/log"
 	"github.com/OSSystems/hulk/template"
+	"github.com/Sirupsen/logrus"
 	"github.com/joho/godotenv"
 	"github.com/pkg/errors"
 )
@@ -48,39 +49,59 @@ func (s *Service) loadEnvironment() {
 
 // loadEnvironmentFile loads specified environment file
 func (s *Service) loadEnvironmentFile(file string) {
-	s.hulk.logger.Info(fmt.Sprintf("[%s] loading environment variables from %s", s.name, file))
+	log.WithFields(logrus.Fields{
+		"service": s.name,
+		"file":    file,
+	}).Info("loading environment variables")
 
 retry:
 	env, err := godotenv.Read(file)
 	if err != nil {
 		if os.IsNotExist(err) {
-			s.hulk.logger.Warn(fmt.Errorf("[%s] environment file does not exists: %s", s.name, file))
+			log.WithFields(logrus.Fields{
+				"service": s.name,
+				"file":    file,
+			}).Warn("environment file does not exists")
 
 			// Create an empty environment file
 			err := ioutil.WriteFile(file, []byte(""), 0666)
 			if err != nil {
-				s.hulk.logger.Warn(errors.Wrapf(err, "[%s] failed to create empty environment file: %s", s.name, file))
+				log.WithFields(logrus.Fields{
+					"service": s.name,
+					"file":    file,
+				}).Warn(errors.Wrapf(err, "failed to create empty environment file"))
 				return
 			}
 
 			// Try again
 			goto retry
 		} else {
-			s.hulk.logger.Warn(errors.Wrapf(err, "[%s] failed to parse environment file: %s", s.name, file))
+			log.WithFields(logrus.Fields{
+				"service": s.name,
+				"file":    file,
+			}).Warn(errors.Wrapf(err, "failed to parse environment file"))
 			return
 		}
 	}
 
 	for key, value := range env {
 		s.environment[key] = value
-		s.hulk.logger.Debug(fmt.Sprintf("[%s] environment variable %s=%s loaded from %s", s.name, key, value, file))
+		log.WithFields(logrus.Fields{
+			"service": s.name,
+			"key":     key,
+			"value":   value,
+			"file":    file,
+		}).Debug("environment variable loaded")
 	}
 }
 
 // expandTopics expands topics from service manifest
 func (s *Service) expandTopics() {
 	for _, topic := range s.topics {
-		s.hulk.logger.Debug(fmt.Sprintf("[%s] unsubscribe from %s", s.name, topic))
+		log.WithFields(logrus.Fields{
+			"service": s.name,
+			"topic":   topic,
+		}).Debug("unsubscribe from topic")
 		s.hulk.unsubscribe(topic, s)
 	}
 
@@ -89,7 +110,10 @@ func (s *Service) expandTopics() {
 	for _, topic := range s.manifest.Topics {
 		expanded, err := template.Expand(topic, s.environment)
 		if err != nil {
-			s.hulk.logger.Warn(errors.Wrapf(err, "[%s] failed to expand topic: %s", s.name, topic))
+			log.WithFields(logrus.Fields{
+				"service": s.name,
+				"topic":   topic,
+			}).Warn(errors.Wrapf(err, "failed to expand topic"))
 			continue
 		}
 
@@ -99,14 +123,17 @@ func (s *Service) expandTopics() {
 
 // subscribe subscribes to topics
 func (s *Service) subscribe() {
-	s.hulk.logger.Info(fmt.Sprintf("[%s] subscribing for topics", s.name))
+	log.WithFields(logrus.Fields{"service": s.name}).Info("subscribing to topics")
 
 	for _, topic := range s.topics {
-		s.hulk.logger.Debug(fmt.Sprintf("[%s] subscribe %s", s.name, topic))
+		log.WithFields(logrus.Fields{
+			"service": s.name,
+			"topic":   topic,
+		}).Debug("subscribe to topic")
 
 		err := s.hulk.subscribe(topic, s)
 		if err != nil {
-			s.hulk.logger.Warn(err)
+			log.Warn(err)
 		}
 	}
 }
@@ -115,7 +142,7 @@ func (s *Service) subscribe() {
 func (s *Service) messageHandler(topic string, payload []byte) {
 	err := s.executeHook(OnReceiveHook, topic, payload)
 	if err != nil {
-		s.hulk.logger.Warn(err)
+		log.Warn(err)
 	}
 }
 
@@ -124,15 +151,18 @@ func (s *Service) executeHook(name HookName, topic string, payload []byte) error
 	hook := NewHook(s, name, topic)
 
 	if hook == nil {
-		s.hulk.logger.Debug(fmt.Sprintf("[%s] skipping hook executation: %s is empty", s.name, HookNameToString(name)))
+		log.WithFields(logrus.Fields{
+			"service": s.name,
+			"hook":    HookNameToString(name),
+		}).Debug("skipping hook executation because it's empty")
 		return nil
 	}
 
-	s.hulk.logger.Info(fmt.Sprintf("[%s] %s: %s", s.name, HookNameToString(name), hook.cmdLine()))
+	log.Infof("[%s] %s: %s", s.name, HookNameToString(name), hook.cmdLine())
 
 	err := hook.execute(payload)
 	if err != nil {
-		return errors.Wrapf(err, "[%s] failed to execute %s", s.name, HookNameToString(name))
+		return errors.Wrapf(err, "failed to execute %s", HookNameToString(name))
 	}
 
 	return nil

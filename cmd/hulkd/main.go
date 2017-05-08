@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/OSSystems/hulk/hulk"
+	"github.com/OSSystems/hulk/log"
 	"github.com/OSSystems/hulk/mqtt"
 	"github.com/Sirupsen/logrus"
 	MQTT "github.com/eclipse/paho.mqtt.golang"
@@ -21,23 +22,21 @@ var RootCmd = &cobra.Command{
 	Use:   "hulkd",
 	Short: "Hulk Daemon",
 	Run: func(cmd *cobra.Command, args []string) {
-		logger := logrus.New()
-
 		switch logLevel {
 		case "panic":
-			logger.Level = logrus.PanicLevel
+			log.SetLevel(logrus.PanicLevel)
 		case "fatal":
-			logger.Level = logrus.FatalLevel
+			log.SetLevel(logrus.FatalLevel)
 		case "error":
-			logger.Level = logrus.ErrorLevel
+			log.SetLevel(logrus.ErrorLevel)
 		case "warn":
-			logger.Level = logrus.WarnLevel
+			log.SetLevel(logrus.WarnLevel)
 		case "info":
-			logger.Level = logrus.InfoLevel
+			log.SetLevel(logrus.InfoLevel)
 		case "debug":
-			logger.Level = logrus.DebugLevel
+			log.SetLevel(logrus.DebugLevel)
 		default:
-			logger.Level = logrus.WarnLevel
+			log.SetLevel(logrus.WarnLevel)
 		}
 
 		opts := MQTT.NewClientOptions()
@@ -46,16 +45,16 @@ var RootCmd = &cobra.Command{
 		client := mqtt.NewPahoClient(opts)
 
 		if err := client.Connect(); err != nil {
-			logger.Fatal(err)
+			log.Fatal(err)
 		}
 
-		hulk, err := hulk.NewHulk(client, servicesDir, logger)
+		hulk, err := hulk.NewHulk(client, servicesDir)
 		if err != nil {
-			logger.Fatal(err)
+			log.Fatal(err)
 		}
 
 		if err := hulk.LoadServices(); err != nil {
-			logger.Fatal(err)
+			log.Fatal(err)
 		}
 
 		hulk.Run()

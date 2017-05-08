@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/OSSystems/hulk/log"
 	"github.com/OSSystems/hulk/mqtt"
 	"github.com/Sirupsen/logrus"
 	"github.com/fsnotify/fsnotify"
@@ -17,11 +18,10 @@ type Hulk struct {
 	client    mqtt.MqttClient
 	handlers  map[string][]*Service
 	fswatcher *fsnotify.Watcher
-	logger    *logrus.Logger
 }
 
 // NewHulk initializes a new Hulk instance
-func NewHulk(client mqtt.MqttClient, path string, logger *logrus.Logger) (*Hulk, error) {
+func NewHulk(client mqtt.MqttClient, path string) (*Hulk, error) {
 	stat, err := os.Stat(path)
 	if err != nil {
 		return nil, err
@@ -41,7 +41,6 @@ func NewHulk(client mqtt.MqttClient, path string, logger *logrus.Logger) (*Hulk,
 		handlers:  make(map[string][]*Service),
 		path:      path,
 		fswatcher: fswatcher,
-		logger:    logger,
 	}, nil
 }
 
@@ -55,7 +54,7 @@ func (h *Hulk) LoadServices() error {
 	for _, file := range files {
 		service, err := NewService(h, file)
 		if err != nil {
-			h.logger.Warn(err)
+			log.Warn(err)
 			continue
 		}
 
@@ -78,7 +77,7 @@ func (h *Hulk) LoadServices() error {
 func (h *Hulk) addService(service *Service) {
 	h.services = append(h.services, service)
 
-	h.logger.Info(fmt.Sprintf("Service added: %s", service.name))
+	log.WithFields(logrus.Fields{"service": service.name}).Info("Service added")
 
 	// Watch environment files for changes
 	for _, file := range service.manifest.EnvironmentFiles {
@@ -88,7 +87,7 @@ func (h *Hulk) addService(service *Service) {
 
 		err := h.fswatcher.Add(file)
 		if err != nil {
-			h.logger.Warn(err)
+			log.Warn(err)
 		}
 	}
 }
@@ -117,7 +116,7 @@ func (h *Hulk) unsubscribe(topic string, service *Service) {
 
 	// Unsubscribe from topic if there is no handlers for topic
 	if len(h.handlers[topic]) == 0 {
-		h.logger.Debug(fmt.Sprintf("No handlers for %s topic: unsubscribing", topic))
+		log.WithFields(logrus.Fields{"topic": topic}).Debug("No handlers for topic: unsubscribing")
 		h.client.Unsubscribe(topic)
 	}
 }
@@ -144,11 +143,11 @@ func (h *Hulk) Run() {
 			select {
 			case event := <-h.fswatcher.Events:
 				if event.Op == fsnotify.Write {
-					h.logger.Debug(fmt.Sprintf("Environment file %s changed", event.Name))
+					log.WithFields(logrus.Fields{"file": event.Name}).Debug("Environment file changed")
 					h.reloadServices(event.Name)
 				}
 			case err := <-h.fswatcher.Errors:
-				h.logger.Warn(err)
+				log.Warn(err)
 			}
 		}
 	}()
