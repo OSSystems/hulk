@@ -4,6 +4,7 @@ import yaml "gopkg.in/yaml.v2"
 
 // Manifest represents a service manifest
 type Manifest struct {
+	Description      string        `yaml:"Description,omitempty"`
 	Topics           []string      `yaml:"Topics"`
 	EnvironmentFiles []string      `yaml:"EnvironmentFiles,omitempty"`
 	Hooks            ManifestHooks `yaml:"Hooks,omitempty"`

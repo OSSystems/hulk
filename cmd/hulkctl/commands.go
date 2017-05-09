@@ -24,7 +24,7 @@ func ListServices(cli *client.Client) error {
 	}
 
 	table := uitable.New()
-	table.AddRow("SERVICE", "STATUS")
+	table.AddRow("SERVICE", "STATUS", "DESCRIPTION")
 
 	for _, service := range services {
 		status := "enabled"
@@ -33,7 +33,7 @@ func ListServices(cli *client.Client) error {
 			status = "disabled"
 		}
 
-		table.AddRow(service.Name, status)
+		table.AddRow(service.Name, status, service.Description)
 	}
 
 	fmt.Println(table)

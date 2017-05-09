@@ -81,9 +81,10 @@ func (h *Hulk) Services() []*types.Service {
 
 	for _, service := range h.services {
 		s := &types.Service{
-			Name:    service.name,
-			Enabled: service.enabled,
-			Topics:  service.topics,
+			Name:        service.name,
+			Description: service.manifest.Description,
+			Enabled:     service.enabled,
+			Topics:      service.topics,
 		}
 
 		s.Hooks.OnReceive = service.manifest.Hooks.OnReceive
