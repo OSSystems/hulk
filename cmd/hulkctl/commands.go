@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/fatih/color"
+	"github.com/gosuri/uitable"
 	"github.com/zyedidia/highlight"
 	yaml "gopkg.in/yaml.v2"
 
@@ -13,8 +14,7 @@ import (
 
 // Text formatting
 var (
-	Green = color.New(color.FgGreen).SprintFunc()
-	Bold  = color.New(color.Bold).SprintFunc()
+	Bold = color.New(color.Bold).SprintFunc()
 )
 
 func ListServices(cli *client.Client) error {
@@ -23,17 +23,21 @@ func ListServices(cli *client.Client) error {
 		return err
 	}
 
-	fmt.Printf("%s  %s\n", Bold("ENABLED"), Bold("SERVICE"))
+	table := uitable.New()
+	table.AddRow("SERVICE", "STATUS")
 
 	for _, service := range services {
-		status := Green("x")
+		status := "enabled"
 
 		if !service.Enabled {
-			status = " "
+			status = "disabled"
 		}
 
-		fmt.Printf("[ %s ]    %s\n", status, service.Name)
+		table.AddRow(service.Name, status)
 	}
+
+	fmt.Println(table)
+	fmt.Printf(Bold("\n%d services listed.\n"), len(services))
 
 	return nil
 }
