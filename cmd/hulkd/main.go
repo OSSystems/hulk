@@ -91,8 +91,8 @@ var RootCmd = &cobra.Command{
 func main() {
 	RootCmd.PersistentFlags().StringVarP(&servicesDir, "dir", "d", servicesDir, "Path to directory with services")
 	RootCmd.PersistentFlags().StringVarP(&brokerAddress, "broker", "b", brokerAddress, "Broker address to connect")
-	RootCmd.PersistentFlags().StringVarP(&listenAddress, "address", "a", listenAddress, "API server listen address")
-	RootCmd.PersistentFlags().StringVarP(&logLevel, "log-level", "l", logLevel, "Set the logging level (panic|fatal|error|warn|info|debug)")
+	RootCmd.PersistentFlags().StringVarP(&listenAddress, "listen", "l", listenAddress, "API server listen address")
+	RootCmd.PersistentFlags().StringVarP(&logLevel, "log-level", "L", logLevel, "Set the logging level (panic|fatal|error|warn|info|debug)")
 
 	if err := RootCmd.Execute(); err != nil {
 		fmt.Println(err)
