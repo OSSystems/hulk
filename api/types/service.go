@@ -2,10 +2,10 @@ package types
 
 // Service contains response of Hulk API: GET /services
 type Service struct {
-	Name    string   `json:"Name"`
-	Enabled bool     `json:"Enabled"`
-	Topics  []string `json:"Topics"`
+	Name    string   `json:"Name" yaml:"Name"`
+	Enabled bool     `json:"Enabled" yaml:"Enabled"`
+	Topics  []string `json:"Topics" yaml:"Topics"`
 	Hooks   struct {
-		OnReceive string `json:"OnReceive"`
-	} `json:"Hooks"`
+		OnReceive string `json:"OnReceive" yaml:"OnReceive"`
+	} `json:"Hooks" yaml:"Hooks"`
 }
