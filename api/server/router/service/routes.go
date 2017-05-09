@@ -52,4 +52,6 @@ func (sr *serviceRouter) getService(w http.ResponseWriter, r *http.Request, p ht
 			return
 		}
 	}
+
+	w.WriteHeader(http.StatusNotFound)
 }
