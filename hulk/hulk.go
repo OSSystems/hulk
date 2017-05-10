@@ -2,7 +2,6 @@ package hulk
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -11,7 +10,6 @@ import (
 	"github.com/OSSystems/hulk/mqtt"
 	"github.com/Sirupsen/logrus"
 	"github.com/fsnotify/fsnotify"
-	"github.com/pkg/errors"
 )
 
 // Hulk represents a Hulk instance
@@ -104,14 +102,10 @@ func (h *Hulk) addService(service *Service) {
 	// Watch environment files for changes
 	for _, file := range service.manifest.EnvironmentFiles {
 		if _, err := os.Stat(file); os.IsNotExist(err) {
-			// Create an empty environment file
-			err := ioutil.WriteFile(file, []byte(""), 0666)
-			if err != nil {
-				log.WithFields(logrus.Fields{
-					"service": service.name,
-					"file":    file,
-				}).Warn(errors.Wrapf(err, "failed to create empty environment file"))
-			}
+			log.WithFields(logrus.Fields{
+				"service": service.name,
+				"file":    file,
+			}).Warn("environment file does not exists")
 		}
 
 		err := h.fswatcher.Add(file)
