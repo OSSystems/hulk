@@ -59,6 +59,8 @@ func (h *Hulk) LoadServices() error {
 			continue
 		}
 
+		service.enabled = h.client.IsConnected()
+
 		h.addService(service)
 
 		// Prepare service for subscription
@@ -91,6 +93,22 @@ func (h *Hulk) Services() []*types.Service {
 	}
 
 	return services
+}
+
+func (h *Hulk) Reload(client mqtt.MqttClient) error {
+	log.Debug("reloading hulk")
+
+	for topic, services := range h.handlers {
+		for _, service := range services {
+			h.unsubscribe(topic, service)
+		}
+	}
+
+	h.services = h.services[:0]
+
+	h.client = client
+
+	return h.LoadServices()
 }
 
 // addService adds service to managed services by Hulk

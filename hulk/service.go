@@ -40,7 +40,7 @@ func NewService(hulk *Hulk, filename string) (*Service, error) {
 		name:        strings.TrimSuffix(basename, filepath.Ext(basename)),
 		manifest:    manifest,
 		environment: make(map[string]string),
-		enabled:     true,
+		enabled:     false,
 	}, nil
 }
 

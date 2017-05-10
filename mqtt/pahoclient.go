@@ -4,6 +4,8 @@ import MQTT "github.com/eclipse/paho.mqtt.golang"
 
 type PahoClient interface {
 	Connect() error
+	Disconnect()
+	IsConnected() bool
 	Subscribe(topic string, qos byte, callback MqttMessageHandler) error
 	Unsubscribe(topic string)
 }
@@ -24,6 +26,14 @@ func (paho pahoClient) Connect() error {
 	token.Wait()
 
 	return token.Error()
+}
+
+func (paho pahoClient) Disconnect() {
+	paho.mqtt.Disconnect(250)
+}
+
+func (paho pahoClient) IsConnected() bool {
+	return paho.mqtt.IsConnected()
 }
 
 func (paho pahoClient) Subscribe(topic string, qos byte, callback MqttMessageHandler) error {
