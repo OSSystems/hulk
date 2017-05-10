@@ -21,7 +21,7 @@ var (
 	servicesDir   = "/etc/hulk.d/"
 	brokerAddress = "tcp://localhost:1883"
 	listenAddress = "unix:///var/run/hulkd.sock"
-	logLevel      = "warn"
+	logLevel      = "info"
 )
 
 var RootCmd = &cobra.Command{
@@ -42,7 +42,7 @@ var RootCmd = &cobra.Command{
 		case "debug":
 			log.SetLevel(logrus.DebugLevel)
 		default:
-			log.SetLevel(logrus.WarnLevel)
+			log.SetLevel(logrus.InfoLevel)
 		}
 
 		opts := MQTT.NewClientOptions()
