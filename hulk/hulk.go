@@ -8,17 +8,17 @@ import (
 	"github.com/OSSystems/hulk/api/types"
 	"github.com/OSSystems/hulk/log"
 	"github.com/OSSystems/hulk/mqtt"
+	"github.com/OSSystems/hulk/pkg/filewatcher"
 	"github.com/Sirupsen/logrus"
-	"github.com/fsnotify/fsnotify"
 )
 
 // Hulk represents a Hulk instance
 type Hulk struct {
-	path      string
-	services  []*Service
-	client    mqtt.MqttClient
-	handlers  map[string][]*Service
-	fswatcher *fsnotify.Watcher
+	path     string
+	services []*Service
+	client   mqtt.MqttClient
+	handlers map[string][]*Service
+	fwatcher *filewatcher.FileWatcher
 }
 
 // NewHulk initializes a new Hulk instance
@@ -32,16 +32,16 @@ func NewHulk(client mqtt.MqttClient, path string) (*Hulk, error) {
 		return nil, fmt.Errorf("%s: not a directory", path)
 	}
 
-	fswatcher, err := fsnotify.NewWatcher()
+	fwatcher, err := filewatcher.NewFileWatcher()
 	if err != nil {
 		return nil, err
 	}
 
 	return &Hulk{
-		client:    client,
-		handlers:  make(map[string][]*Service),
-		path:      path,
-		fswatcher: fswatcher,
+		client:   client,
+		handlers: make(map[string][]*Service),
+		path:     path,
+		fwatcher: fwatcher,
 	}, nil
 }
 
@@ -108,7 +108,7 @@ func (h *Hulk) addService(service *Service) {
 			}).Warn("environment file does not exists")
 		}
 
-		err := h.fswatcher.Add(file)
+		err := h.fwatcher.Add(file)
 		if err != nil {
 			log.Warn(err)
 		}
@@ -164,16 +164,14 @@ func (h *Hulk) reloadServices(file string) {
 func (h *Hulk) Run() {
 	done := make(chan bool)
 
+	go h.fwatcher.Watch()
+
 	go func() {
 		for {
 			select {
-			case event := <-h.fswatcher.Events:
-				if event.Op == fsnotify.Write {
-					log.WithFields(logrus.Fields{"file": event.Name}).Debug("environment file changed")
-					h.reloadServices(event.Name)
-				}
-			case err := <-h.fswatcher.Errors:
-				log.Warn(err)
+			case file := <-h.fwatcher.Changed:
+				log.WithFields(logrus.Fields{"file": file}).Debug("environment file changed")
+				h.reloadServices(file)
 			}
 		}
 	}()
