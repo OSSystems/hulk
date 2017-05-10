@@ -99,7 +99,7 @@ func (h *Hulk) Services() []*types.Service {
 func (h *Hulk) addService(service *Service) {
 	h.services = append(h.services, service)
 
-	log.WithFields(logrus.Fields{"service": service.name}).Info("Service added")
+	log.WithFields(logrus.Fields{"service": service.name}).Info("service added")
 
 	// Watch environment files for changes
 	for _, file := range service.manifest.EnvironmentFiles {
@@ -145,7 +145,7 @@ func (h *Hulk) unsubscribe(topic string, service *Service) {
 
 	// Unsubscribe from topic if there is no handlers for topic
 	if len(h.handlers[topic]) == 0 {
-		log.WithFields(logrus.Fields{"topic": topic}).Debug("No handlers for topic: unsubscribing")
+		log.WithFields(logrus.Fields{"topic": topic}).Debug("no remaining handler for topic")
 		h.client.Unsubscribe(topic)
 	}
 }
@@ -155,6 +155,8 @@ func (h *Hulk) reloadServices(file string) {
 	for _, service := range h.services {
 		for _, envfile := range service.manifest.EnvironmentFiles {
 			if envfile == file {
+				log.WithFields(logrus.Fields{"service": service.name}).Info("reloading service")
+
 				service.enabled = true
 				service.loadEnvironment()
 				service.expandTopics()
@@ -173,7 +175,7 @@ func (h *Hulk) Run() {
 			select {
 			case event := <-h.fswatcher.Events:
 				if event.Op == fsnotify.Write {
-					log.WithFields(logrus.Fields{"file": event.Name}).Debug("Environment file changed")
+					log.WithFields(logrus.Fields{"file": event.Name}).Debug("environment file changed")
 					h.reloadServices(event.Name)
 				}
 			case err := <-h.fswatcher.Errors:

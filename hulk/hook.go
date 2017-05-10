@@ -3,6 +3,9 @@ package hulk
 import (
 	"fmt"
 	"os/exec"
+
+	"github.com/OSSystems/hulk/log"
+	"github.com/Sirupsen/logrus"
 )
 
 // HookName holds the supported hooks
@@ -69,6 +72,20 @@ func (h *Hook) createCmd() *exec.Cmd {
 // execute executes hook command
 func (h *Hook) execute(payload []byte) error {
 	cmd := h.createCmd()
+
+	logFields := logrus.Fields{
+		"service": h.service.name,
+		"hook":    HookNameToString(h.name),
+	}
+
+	if log.GetLevel() == logrus.DebugLevel {
+		logFields["cmd"] = h.cmdLine()
+		logFields["env"] = cmd.Env
+		logFields["payload"] = string(payload)
+		log.WithFields(logFields).Debug("executing hook")
+	} else {
+		log.WithFields(logFields).Info("executing hook")
+	}
 
 	stdin, err := cmd.StdinPipe()
 	if err != nil {

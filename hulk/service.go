@@ -58,7 +58,7 @@ func (s *Service) loadEnvironmentFile(file string) {
 	log.WithFields(logrus.Fields{
 		"service": s.name,
 		"file":    file,
-	}).Info("loading environment variables")
+	}).Debug("loading environment variables")
 
 	env, err := godotenv.Read(file)
 	if err != nil {
@@ -93,7 +93,7 @@ func (s *Service) expandTopics() {
 		log.WithFields(logrus.Fields{
 			"service": s.name,
 			"topic":   topic,
-		}).Debug("unsubscribe from topic")
+		}).Info("unsubscribe from topic")
 		s.hulk.unsubscribe(topic, s)
 	}
 
@@ -110,12 +110,13 @@ func (s *Service) expandTopics() {
 				})
 
 				if ve.IsOptional {
-					logEntry.Warn(errors.Wrapf(err, "failed to expand topic"))
+					logEntry.Warn("no value for optional variable")
 
 					// If value of variable is optional them ignore ONLY the current topic
 					continue
 				} else {
-					logEntry.Error(errors.Wrapf(err, "failed to expand topic"))
+					logEntry.Data["reason"] = err
+					logEntry.Error("service disabled")
 
 					// If the value of variable is required them disable service,
 					// clear the topic list and ignore ALL topics from manifest
@@ -134,7 +135,7 @@ func (s *Service) expandTopics() {
 // subscribe subscribes to topics
 func (s *Service) subscribe() {
 	if !s.enabled {
-		log.WithFields(logrus.Fields{"service": s.name}).Info("skipping subscribe while service is disabled")
+		log.WithFields(logrus.Fields{"service": s.name}).Debug("skipping subscribe while service is disabled")
 		return
 	}
 
@@ -142,7 +143,7 @@ func (s *Service) subscribe() {
 		log.WithFields(logrus.Fields{
 			"service": s.name,
 			"topic":   topic,
-		}).Debug("subscribe to topic")
+		}).Info("subscribe to topic")
 
 		err := s.hulk.subscribe(topic, s)
 		if err != nil {
@@ -167,11 +168,9 @@ func (s *Service) executeHook(name HookName, topic string, payload []byte) error
 		log.WithFields(logrus.Fields{
 			"service": s.name,
 			"hook":    HookNameToString(name),
-		}).Debug("skipping hook executation because it's empty")
+		}).Debug("cannot find hook or it is empty")
 		return nil
 	}
-
-	log.Infof("[%s] %s: %s", s.name, HookNameToString(name), hook.cmdLine())
 
 	err := hook.execute(payload)
 	if err != nil {
