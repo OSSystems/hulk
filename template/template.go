@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-const templateRegexp = `{(?P<name>[a-zA-Z_][a-zA-Z0-9_]+)(?P<array>\[.?\])?(?P<optional>\?)?}`
+const templateRegexp = `{(?P<name>[a-zA-Z_][a-zA-Z0-9_]+)(?P<array>\[.?\])?}(?P<optional>\?)?`
 
 type template struct {
 	content   string

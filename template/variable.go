@@ -21,7 +21,7 @@ func (v *templateVariable) string() string {
 	array := map[bool]string{true: "[" + v.arraySeparator + "]", false: ""}
 	optional := map[bool]string{true: "?", false: ""}
 
-	return fmt.Sprintf("{%s%s%s}", v.name, array[v.isArray], optional[v.isOptional])
+	return fmt.Sprintf("{%s%s}%s", v.name, array[v.isArray], optional[v.isOptional])
 }
 
 type arrayItem struct {
