@@ -1,16 +1,43 @@
 hash: 93249ae582a1107e0fc37a13098f0fb7f0f968f4f647dbd293a30d246573ba7a
-updated: 2017-04-17T15:03:51.445173831-03:00
+updated: 2017-05-11T09:36:28.013358152-03:00
 imports:
 - name: github.com/eclipse/paho.mqtt.golang
   version: c37a0a275c2de30bf1c7eb072dd6bef09a93c666
   subpackages:
   - packets
+- name: github.com/fatih/color
+  version: 9131ab34cf20d2f6d83fdc67168a5430d1c7dc23
 - name: github.com/fsnotify/fsnotify
   version: 4da3e2cfbabc9f751898f250b49f2439785783a1
+- name: github.com/gosuri/uitable
+  version: 36ee7e946282a3fb1cfecd476ddc9b35d8847e42
+  subpackages:
+  - util/strutil
+  - util/wordwrap
 - name: github.com/imkira/go-interpol
   version: 5accad8134979a6ac504d456a6c7f1c53da237ca
+- name: github.com/inconshreveable/mousetrap
+  version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - name: github.com/joho/godotenv
   version: 325433c502d409f3c3dc820098fb0cfe38d98dc7
+- name: github.com/julienschmidt/httprouter
+  version: 975b5c4c7c21c0e3d2764200bf2aa8e34657ae6e
+- name: github.com/mattn/go-colorable
+  version: ded68f7a9561c023e790de24279db7ebf473ea80
+- name: github.com/mattn/go-isatty
+  version: fc9e8d8ef48496124e79ae0df75490096eccf6fe
+- name: github.com/mattn/go-runewidth
+  version: 97311d9f7767e3d6f422ea06661bc2c7a19e8a5d
+- name: github.com/pkg/errors
+  version: c605e284fe17294bda444b34710735b29d1a9d90
+- name: github.com/Sirupsen/logrus
+  version: 5b60b3d3ee017ed00bcd0225fcca7acab767844b
+- name: github.com/spf13/cobra
+  version: 1362f95a8d6fe330d00a64380d6e0b65f4992c72
+- name: github.com/spf13/pflag
+  version: e57e3eeb33f795204c1ca35f56c44f83227c6e66
+- name: github.com/zyedidia/highlight
+  version: 201131ce5cf5ba174570dcd878d1f2698db5af9f
 - name: golang.org/x/net
   version: 5602c733f70afc6dcec6766be0d5034d4c4f14de
   subpackages:
