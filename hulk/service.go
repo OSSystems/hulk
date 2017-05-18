@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/OSSystems/hulk/log"
+	"github.com/OSSystems/pkg/log"
 	"github.com/OSSystems/hulk/template"
 	"github.com/Sirupsen/logrus"
 	"github.com/joho/godotenv"

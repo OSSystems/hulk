@@ -5,6 +5,9 @@ import:
 - package: github.com/imkira/go-interpol
 - package: github.com/joho/godotenv
 - package: gopkg.in/yaml.v2
+- package: github.com/OSSystems/pkg
+  subpackages:
+  - log
 testImport:
 - package: github.com/bouk/monkey
 - package: github.com/stretchr/testify

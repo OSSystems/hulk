@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os/exec"
 
-	"github.com/OSSystems/hulk/log"
+	"github.com/OSSystems/pkg/log"
 	"github.com/Sirupsen/logrus"
 )
 

@@ -5,7 +5,7 @@ import (
 	"os"
 
 	"github.com/OSSystems/hulk/client"
-	"github.com/OSSystems/hulk/log"
+	"github.com/OSSystems/pkg/log"
 	"github.com/spf13/cobra"
 )
 

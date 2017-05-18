@@ -10,7 +10,7 @@ import (
 	"github.com/OSSystems/hulk/api/server/router"
 	"github.com/OSSystems/hulk/api/server/router/service"
 	"github.com/OSSystems/hulk/hulk"
-	"github.com/OSSystems/hulk/log"
+	"github.com/OSSystems/pkg/log"
 	"github.com/OSSystems/hulk/mqtt"
 	"github.com/OSSystems/hulk/pkg/filewatcher"
 	"github.com/Sirupsen/logrus"

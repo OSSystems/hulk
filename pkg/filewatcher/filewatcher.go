@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/OSSystems/hulk/log"
+	"github.com/OSSystems/pkg/log"
 	"github.com/fsnotify/fsnotify"
 )
 

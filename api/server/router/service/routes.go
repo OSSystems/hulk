@@ -6,7 +6,7 @@ import (
 
 	"github.com/OSSystems/hulk/api/server/router"
 	"github.com/OSSystems/hulk/hulk"
-	"github.com/OSSystems/hulk/log"
+	"github.com/OSSystems/pkg/log"
 	"github.com/julienschmidt/httprouter"
 )
 

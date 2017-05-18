@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/OSSystems/hulk/api/types"
-	"github.com/OSSystems/hulk/log"
+	"github.com/OSSystems/pkg/log"
 	"github.com/OSSystems/hulk/mqtt"
 	"github.com/OSSystems/hulk/pkg/filewatcher"
 	"github.com/Sirupsen/logrus"
